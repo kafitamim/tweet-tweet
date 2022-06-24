@@ -1,0 +1,36 @@
+body {
+  background-color: #809848;
+}
+
+.main-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: stretch;
+  flex-grow: 1;
+}
+
+.container1 {
+  flex-basis: 350px;
+  flex-wrap: wrap;
+}
+
+.container2 {
+  flex-wrap: wrap;
+  flex-basis: 550px;
+}
+
+#h1 {
+  text-align: center;
+}
+
+.tweet-name {
+  margin: 0px 0px;
+  padding: 5px;
+  border: 2px #2e0014;
+  min-height: 16px;
+  line-height: 16px;
+  width: 96%;
+  display: block;
+  margin: 0px auto;
+}
