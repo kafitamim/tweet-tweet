@@ -5,15 +5,11 @@ const tweetTextContentInput = document.querySelector(".tweet-name");
 const countStartText = document.querySelector(".count-start-text");
 const addTweetElm = document.querySelector(".add-tweet");
 const addListItem = document.querySelector(".list-group");
+const filterTweetElm = document.querySelector("#search-tweet");
 
 //temporary variables
 let tweetsTempoStore = [];
-let characterCount = 0;
-let inputCountMatch = 1;
-
-// yyyy - MM - dd;
-// console.log(time);
-// console.log(date);
+// showfilterArr(tweetsTempoStore);
 
 // ALL EVENT LISTENER ADD HERE!
 
@@ -32,62 +28,51 @@ formElm.addEventListener("submit", (evt) => {
   const id = tweetsTempoStore.length;
   const tweetNo = id + 1;
   const tweetsTempo = {
-    id: id,
-    tweetNo: tweetNo,
+    id,
+    tweetNo,
     tweetName: tweetTextResult,
     dateAndTime: time,
   };
-
   tweetsTempoStore.push(tweetsTempo);
-  // add tweet to UI
+  // showfilterArr(tweetsTempoStore);
   addTweetToUI(id, tweetNo, tweetTextResult, time);
   // add tweet to local storage
   addTweetToLocalStore(tweetsTempo);
   // add to search filter base on id.
 });
 
-// add key-down event listener -------
-tweetTextContentInput.addEventListener("keyup", (evt) => {
-  const value = tweetTextContentInput.value.length;
-
-  if (value > 0) {
-    inputCountMatch = value + 1;
-    characterCount++;
-    countStartText.textContent = characterCount;
-    // console.log(characterCount);
-    // console.log(inputCountMatch);
-    // console.log(tweetTextContentInput.value.length);
-    // }
-    // else {
-    //   characterCount--;
-    //   inputCountMatch--;
-    //   countStartText.textContent = characterCount;
-    //   // console.log(characterCount);
-    //   // console.log(inputCountMatch);
-    //   if (characterCount === 0) {
-    //     return;
-  }
+// counter -------
+tweetTextContentInput.addEventListener("input", (evt) => {
+  let textCounter = tweetTextContentInput.value.length;
+  countStartText.textContent = textCounter;
 });
 
 // addEventlistener into listItems.
 
 addListItem.addEventListener("click", (evt) => {
-  console.log(evt.target);
   if (evt.target.classList.contains("delete-tweet")) {
     const id = getTweetId(evt.target);
-    console.log(id);
     // remove tweet from UI
     removeTweetFromUI(id);
     // update temporary store
     removeFromTempoStore(id);
-    console.log(id);
+    //remove from local storage
+    removeTweetsFromStorage(id);
   }
+});
+
+filterTweetElm.addEventListener("keyup", (evt) => {
+  const filteredValue = evt.target.value;
+  const filteredTweetArr = tweetsTempoStore.filter((filtered) => {
+    return filtered.tweetName.includes(filteredValue);
+  });
+  showfilterArr(filteredTweetArr);
 });
 
 //ALL FUNCTIONS WHICH CAN BE REUSED!
 
 function addTweetInputResult(tweetTextContentInput) {
-  const tweetText = tweetTextContentInput.value;
+  let tweetText = tweetTextContentInput.value;
   return tweetText;
 }
 
@@ -108,17 +93,17 @@ function clearTweetInputValue() {
 
 function addTweetToUI(id, tweetNo, tweet, time) {
   const htmlElm = `
-  <li class="list-group-item tweet-${id} collection-item"> 
+  <li class="list-group-item tweet-${id} collection-item">
   <strong> <span class="tweet-number">  ${tweetNo}.</span>
   </strong> <strong> ${tweet} </strong>
-  <i class="fa fa-trash float-right delete-tweet"></i> 
+  <i class="fa fa-trash float-right delete-tweet"></i>
   <i class="fas fa-clock float-right">
     <span class="tweet-date"> ${time} </span>
   </i>
     </li>`;
-  // &nbsp;
   addListItem.insertAdjacentHTML("beforeend", htmlElm);
   clearTweetInputValue();
+  countStartText.textContent = 0;
 }
 
 function addTweetToLocalStore(tweetsTempo) {
@@ -149,11 +134,47 @@ function removeTweetFromUI(id) {
   document.querySelector(`.tweet-${id}`).remove();
 }
 
-function UpdateAfterRemove(tweetsTempoStore, id) {
+function updateAfterRemove(tweetsTempoStore, id) {
   return tweetsTempoStore.filter((elem) => elem.id !== id);
 }
 
 function removeFromTempoStore(id) {
-  const newTweetTempoStore = UpdateAfterRemove(tweetsTempoStore, id);
+  const newTweetTempoStore = updateAfterRemove(tweetsTempoStore, id);
+  console.log(newTweetTempoStore);
   tweetsTempoStore = newTweetTempoStore;
 }
+
+function showfilterArr(filtArr) {
+  addListItem.innerHTML = "";
+  filtArr.forEach((elem) => {
+    const htmlElm = `
+  <li class="list-group-item tweet-${elem.id} collection-item">
+  <strong> <span class="tweet-number">  ${elem.tweetNo}.</span>
+  </strong> <strong> ${elem.tweetName} </strong>
+  <i class="fa fa-trash float-right delete-tweet"></i>
+  <i class="fas fa-clock float-right">
+    <span class="tweet-date"> ${elem.dateAndTime} </span>
+  </i>
+    </li>`;
+    addListItem.insertAdjacentHTML("beforeend", htmlElm);
+  });
+}
+
+function removeTweetsFromStorage(id) {
+  const tweetsTempoStore = JSON.parse(
+    localStorage.getItem("localStoreTweetKey")
+  );
+  const getTweetsAfterRemove = updateAfterRemove(tweetsTempoStore, id);
+  localStorage.setItem(
+    "localStoreTweetKey",
+    JSON.stringify(getTweetsAfterRemove)
+  );
+  // update id number
+}
+
+document.addEventListener("DOMContentLoaded", (evt) => {
+  if (localStorage.getItem("localStoreTweetKey")) {
+    localTweet = JSON.parse(localStorage.getItem("localStoreTweetKey"));
+    showfilterArr(localTweet);
+  }
+});
